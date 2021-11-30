@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tiklanma Oyunu</title>
+
+    <style>
+        body{ 
+            /* koordinatlarda problem (koordinat kayması) yasanmamasi icin sifirliyoruz */
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+
+</head>
+
+<body>
+    <canvas id="cerceve" width="750" height="550" style="border: 1px solid blue;"></canvas>
+    <h1 id="kordinat">Oyuna başlamak için kareye tıklayınız.</h1>
+
+
+    <script>
+
+        let cerceve = document.querySelector("#cerceve");
+
+        let cizim = cerceve.getContext("2d"); //2d cizim obj olusturuldu
+
+        //cerceve boyutlari
+        let cerveBoy = cerceve.height; 
+        let cerceveEn = cerceve.width;
+
+        let kareBoyutu = 40; //Bir kernar uzunlugu
+
+        //bir onceki tiklama zamanini tutar
+        let onceki_zaman = Math.floor(Date.now()); //default degeri obj olusturma zamanidir
+
+        
+        var objKonumX;
+        var objKonumY;
+
+        //puan bilgisi baslangic 0
+        let puan = 0;
+
+
+        //cerceve icini her seferinde beyaza boyar
+        function temizle() {
+
+            cizim.beginPath(); //cizim islemine basla
+            cizim.fillStyle = "#FFFFFF"; //rengini ata
+            //Tum cerceve boyunca ciz
+            cizim.fillRect(0, 0, cerceve.width, cerceve.height); 
+            //cizimi kapat
+            cizim.closePath();
+            //Ekrani kapla
+            cizim.fill();
+
+
+
+        }
+
+        /*
+            Belirtilen konumlarda Kare cizen fonk.
+            Parameters:
+                Int  x, konum x eksenindeki baslangic nok. 
+                Int  Y, konum y eksenindeki baslangic nok.
+
+            Cizim noktanın sagina ve aşağısına dogru devam eder
+            Example: x: 20 ise karenin sonu x + karenin kenari olur,
+                     (aynisi y icinde gecerli :-) )   
+            */
+        function kareCiz(x, y) {    
+
+            cizim.beginPath();
+            cizim.fillStyle = "black";
+            cizim.fillRect(x, y, kareBoyutu, kareBoyutu);
+            cizim.closePath();
+            cizim.fill();
+
+        }
+
+        /*
+         Rastegele koordinatlarda  cizim islemi yapar
+         tasma olmamsi icin karenin boyutlari sinirdan cikartilir
+        */
+        function rastgeleCiz() {
+            objKonumX = Math.random() * (cerceveEn - kareBoyutu);
+            objKonumY = Math.random() * (cerveBoy - kareBoyutu);
+            kareCiz(objKonumX, objKonumY);
+
+        }
+        
+        //sayfa ilk calistiginda calisan fonk.
+        function init() {
+            rastgeleCiz(); //ilk rastgele cizim yapar
+        }
+
+
+        /*
+            Farenin konumu ile objenin konumunu karsilastirir.
+            Parameters:
+                Int  x, farenin x koordinati
+                Int  Y, farenin y koordinati
+
+            Karenin alan araligi icin konumdan buyuk, konum + boyutlarından kucuk olması gerekir)   
+            */
+        function koordinatKontrol(x, y) {
+
+            return (x >= objKonumX && x <= objKonumX + 40) && (y >= objKonumY && y <= objKonumY + 40);
+        }
+
+        //Farenin tiklama eventini yakalar
+        cerceve.addEventListener('click', function (event) {
+           
+            //Farenin koordinatlari
+            let x = event.pageX; 
+            let y = event.pageY;
+            
+
+            let tiklanma_zamani = Math.floor(Date.now());
+            
+            let tepki_suresi = tiklanma_zamani - onceki_zaman;
+            
+            //onceki zaman bir sonraki tiklama icin guncellenir
+            onceki_zaman = tiklanma_zamani;
+
+            //kare uzerine tiklanmissa ve tepki suremiz (5s) asilmamis ise            
+            if (koordinatKontrol(x, y) && tepki_suresi < 5000) {
+                
+                puan += 5000 - tepki_suresi; //tepki hizi kadar puan ekle
+                
+                //konum ve puan bilgilerini yaz
+                document.querySelector("#kordinat").innerHTML = "  X:  " + x + "   Y: " + y + "   Puanınız:  " + puan;
+                
+                temizle(); //bir sonraki kare cizimi icin temizle
+                rastgeleCiz(); //sonraki kareyi ciz
+            }
+            else { 
+                document.querySelector("#kordinat").innerHTML = "Oyun Bitti Puanınız:" + puan; //mesaji yaz
+                puan = 0; //Bir sonraki oyun icin puani sifirla
+            }
+
+
+        }, false);
+
+
+        init(); //Sayfa acilinca calistir
+
+    </script>
+
+
+</body>
+
+</html>
